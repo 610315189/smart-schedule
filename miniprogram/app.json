@@ -1,0 +1,50 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/timetable/timetable",
+    "pages/classroom/classroom",
+    "pages/course-edit/course-edit",
+    "pages/settings/settings"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#2b5cff",
+    "navigationBarTitleText": "智能课表",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f2f4f8",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#8a93a6",
+    "selectedColor": "#2b5cff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "今日",
+        "iconPath": "assets/icons/today.png",
+        "selectedIconPath": "assets/icons/today-active.png"
+      },
+      {
+        "pagePath": "pages/timetable/timetable",
+        "text": "课表",
+        "iconPath": "assets/icons/timetable.png",
+        "selectedIconPath": "assets/icons/timetable-active.png"
+      },
+      {
+        "pagePath": "pages/classroom/classroom",
+        "text": "空教室",
+        "iconPath": "assets/icons/classroom.png",
+        "selectedIconPath": "assets/icons/classroom-active.png"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "设置",
+        "iconPath": "assets/icons/settings.png",
+        "selectedIconPath": "assets/icons/settings-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

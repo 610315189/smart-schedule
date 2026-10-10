@@ -1,0 +1,171 @@
+﻿<view class="page">
+
+  <!-- ============ 查询条件 ============ -->
+  <view class="card">
+    <view class="chip-row">
+      <view
+        class="chip {{item.date === date ? 'active' : ''}}"
+        wx:for="{{dateShortcuts}}"
+        wx:key="date"
+        data-date="{{item.date}}"
+        bindtap="onDateShortcut"
+      >{{item.label}}</view>
+      <picker mode="date" value="{{date}}" bindchange="onDatePick">
+        <view class="chip">📅 {{dateLabel}}</view>
+      </picker>
+    </view>
+
+    <view class="row-between mt16">
+      <picker class="flex1" mode="selector" range="{{periodLabels}}" value="{{startIndex}}" bindchange="onStartPick">
+        <view class="pick-box">起：{{periodLabels[startIndex]}}</view>
+      </picker>
+      <text class="muted" style="padding:0 16rpx">至</text>
+      <picker class="flex1" mode="selector" range="{{periodLabels}}" value="{{endIndex}}" bindchange="onEndPick">
+        <view class="pick-box">止：{{periodLabels[endIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="chip-row mt16">
+      <view class="chip" data-key="now" bindtap="quickSelect">现在</view>
+      <view class="chip" data-key="morning" bindtap="quickSelect">上午</view>
+      <view class="chip" data-key="afternoon" bindtap="quickSelect">下午</view>
+      <view class="chip" data-key="evening" bindtap="quickSelect">晚上</view>
+      <view class="chip" data-key="span2" bindtap="quickSelect">连空 2 节</view>
+      <view class="chip" data-key="span3" bindtap="quickSelect">连空 3 节</view>
+    </view>
+  </view>
+
+  <!-- ============ 筛选 ============ -->
+  <view class="card">
+    <view class="filter-label">教学楼</view>
+    <view class="chip-row">
+      <view
+        class="chip {{buildingIndex === index ? 'active' : ''}}"
+        wx:for="{{buildingOptions}}"
+        wx:key="*this"
+        data-index="{{index}}"
+        bindtap="onBuildingPick"
+      >{{index === 0 ? '全部' : item}}</view>
+    </view>
+
+    <view class="filter-label mt16">座位数</view>
+    <view class="chip-row">
+      <view
+        class="chip {{capacityIndex === index ? 'active' : ''}}"
+        wx:for="{{capacityOptions}}"
+        wx:key="label"
+        data-index="{{index}}"
+        bindtap="onCapacityPick"
+      >{{item.label}}</view>
+    </view>
+
+    <view class="filter-label mt16">设施</view>
+    <view class="chip-row">
+      <view
+        class="chip {{item.active ? 'active' : ''}}"
+        wx:for="{{facilityOptions}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="toggleFacility"
+      >{{item.label}}</view>
+    </view>
+
+    <view class="filter-label mt16">排序</view>
+    <view class="chip-row">
+      <view
+        class="chip {{sort === item.id ? 'active' : ''}}"
+        wx:for="{{sortOptions}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onSortPick"
+      >{{item.label}}</view>
+      <view class="chip {{onlyStudy ? 'active' : ''}}" bindtap="toggleOnlyStudy">仅可自习教室</view>
+    </view>
+  </view>
+
+  <!-- ============ 统计 ============ -->
+  <view class="stat-bar">
+    <view class="stat-line">{{weekLabel}} {{dayLabel}} · {{periodText}} {{timeRangeText}}</view>
+    <view class="stat-main">
+      <text class="stat-num">{{freeCount}}</text>
+      <text class="stat-unit">间空闲</text>
+      <text class="stat-divider">/</text>
+      <text class="stat-sub">可自习 {{studyTotal}} 间 · 占用 {{occupiedCount}} 间</text>
+    </view>
+    <view class="tiny mt8" style="opacity:.85" wx:if="{{timeHint}}">{{timeHint}}</view>
+  </view>
+
+  <view class="warn" wx:if="{{!hasOccupancy}}">
+    ⚠️ 还没有导入全校教室占用表，当前结果只根据你自己的课表推算，可能偏多。
+    在「设置 → 数据管理」中导入全校占用数据后，空教室判断才准确。
+  </view>
+
+  <view class="warn" wx:if="{{unknownRooms.length}}">
+    ⚠️ 课表中出现教室字典里没有的编号：{{unknownRooms}}。请在 data/classrooms.js 或设置页补齐，否则这些教室不会出现在结果里。
+  </view>
+
+  <!-- ============ 结果 ============ -->
+  <view wx:if="{{rooms.length === 0}}" class="card">
+    <view class="empty">该条件下没有找到空闲教室，试试放宽节次或筛选条件</view>
+  </view>
+
+  <view
+    class="room-card"
+    wx:for="{{rooms}}"
+    wx:key="id"
+    data-id="{{item.id}}"
+    bindtap="onRoomTap"
+  >
+    <view class="row-between">
+      <view class="room-name">{{item.name}}</view>
+      <view class="tag tag-green">{{item.freeSpanText}}</view>
+    </view>
+    <view class="tiny muted mt8" wx:if="{{item.runSpanText}}">🕒 {{item.runSpanText}}</view>
+    <view class="tiny muted mt8">{{item.building}} · {{item.floor}} 楼 · {{item.capacityText}} · {{item.typeLabel}}</view>
+    <view class="mt8" wx:if="{{item.facilityLabels.length}}">
+      <text class="tag tag-gray" wx:for="{{item.facilityLabels}}" wx:for-item="f" wx:key="*this">{{f}}</text>
+    </view>
+    <view class="tiny muted mt8">
+      今日空堂 {{item.freeRunCount}} 段：
+      <text wx:for="{{item.freeRuns}}" wx:for-item="run" wx:key="start">{{run.periodText}}（{{run.durationText}}）　</text>
+    </view>
+  </view>
+
+  <view class="legend tiny muted" wx:if="{{rooms.length}}">
+    点击教室可查看当天的全部空堂与占用详情。
+  </view>
+
+</view>
+
+<!-- ============ 教室详情 ============ -->
+<view class="mask" wx:if="{{showDetail}}" catchtouchmove="noop" bindtap="closeDetail">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-title">{{detail.name}}</view>
+    <view class="sheet-sub">
+      {{detail.building}} · {{detail.floor}} 楼 · {{detail.capacityText}} · {{detail.typeLabel}}
+      <text wx:if="{{!detail.openForStudy}}"> · 暂不开放自习</text>
+    </view>
+
+    <view class="mt8" wx:if="{{detail.facilityLabels.length}}">
+      <text class="tag tag-gray" wx:for="{{detail.facilityLabels}}" wx:key="*this">{{item}}</text>
+    </view>
+
+    <view class="section-title mt24">{{detail.dateLabel}} 空堂时段</view>
+    <view wx:if="{{detail.runs.length === 0}}" class="tiny muted">当天无空闲时段</view>
+    <view class="run-row" wx:for="{{detail.runs}}" wx:key="start">
+      <text class="strong">{{item.periodText}}</text>
+      <text class="muted tiny">{{item.startTime}} - {{item.endTime}} · {{item.durationText}}</text>
+    </view>
+
+    <view class="section-title mt24">{{detail.dateLabel}} 被占用</view>
+    <view wx:if="{{detail.occupied.length === 0}}" class="tiny muted">当天没有被课表占用的时段</view>
+    <view class="run-row" wx:for="{{detail.occupied}}" wx:key="text">
+      <text class="tiny muted">{{item.text}}</text>
+    </view>
+
+    <view class="row gap16 mt24">
+      <view class="btn-plain flex1" bindtap="closeDetail">关闭</view>
+      <view class="btn-primary flex1" bindtap="copyRoom">复制教室名</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,164 @@
+<view class="page">
+
+  <!-- ============ 上课提醒 ============ -->
+  <view class="card">
+    <view class="card-title">
+      <text>上课提醒</text>
+      <text class="sub">防止迟到 / 误课</text>
+    </view>
+
+    <view class="row-between">
+      <view class="col">
+        <text class="strong">提前提醒</text>
+        <text class="tiny muted">距上课还有多久提醒你出发</text>
+      </view>
+      <text class="val">{{settings.aheadMinutes}} 分钟</text>
+    </view>
+    <slider min="5" max="60" step="5" value="{{settings.aheadMinutes}}" bindchange="onAheadChange"
+      activeColor="#2b5cff" backgroundColor="#e9edf5" block-size="22" />
+
+    <view class="row-between">
+      <view class="col">
+        <text class="strong">最后提醒</text>
+        <text class="tiny muted">临出门前的二次提醒</text>
+      </view>
+      <text class="val">{{settings.finalAheadMinutes}} 分钟</text>
+    </view>
+    <slider min="1" max="15" step="1" value="{{settings.finalAheadMinutes}}" bindchange="onFinalChange"
+      activeColor="#f76707" backgroundColor="#e9edf5" block-size="22" />
+
+    <view class="row-between">
+      <view class="col">
+        <text class="strong">自动弹窗范围</text>
+        <text class="tiny muted">打开小程序时，距上课小于该时长才弹提醒</text>
+      </view>
+      <text class="val">{{settings.autoPopupMinutes}} 分钟</text>
+    </view>
+    <slider min="10" max="90" step="5" value="{{settings.autoPopupMinutes}}" bindchange="onAutoPopupChange"
+      activeColor="#12b886" backgroundColor="#e9edf5" block-size="22" />
+
+    <view class="divider"></view>
+
+    <view class="row-between switch-row">
+      <text>震动提醒</text>
+      <switch checked="{{settings.vibrate}}" data-field="vibrate" bindchange="onSwitch" color="#2b5cff" />
+    </view>
+    <view class="row-between switch-row">
+      <text>提示音</text>
+      <switch checked="{{settings.sound}}" data-field="sound" bindchange="onSwitch" color="#2b5cff" />
+    </view>
+    <view class="row-between switch-row">
+      <text>页面弹窗提醒</text>
+      <switch checked="{{settings.popup}}" data-field="popup" bindchange="onSwitch" color="#2b5cff" />
+    </view>
+
+    <view class="btn-ghost mt16" bindtap="testRemind">测试一次提醒效果</view>
+  </view>
+
+  <!-- ============ 手机日历 ============ -->
+  <view class="card">
+    <view class="card-title">
+      <text>同步到手机日历</text>
+      <text class="sub">最强保险</text>
+    </view>
+    <view class="tiny muted">
+      把整学期课程写入手机系统日历后，即使从不打开小程序，系统也会按时响铃提醒 —— 这是防止误课最可靠的方式。
+    </view>
+    <view class="row gap16 mt16">
+      <view class="btn-plain flex1" data-scope="week" bindtap="syncCalendar">只同步本周</view>
+      <view class="btn-primary flex1" data-scope="all" bindtap="syncCalendar">同步整学期</view>
+    </view>
+    <view class="hint mt16" wx:if="{{syncResult}}">{{syncResult}}</view>
+    <view class="tiny muted mt8" wx:if="{{settings.lastCalendarSync}}">上次同步时间：{{settings.lastCalendarSync}}</view>
+    <view class="tiny muted mt8">注意：重复点击会重复添加日历条目，建议每学期同步一次即可。</view>
+  </view>
+
+  <!-- ============ 订阅消息 ============ -->
+  <view class="card">
+    <view class="card-title">微信课前通知</view>
+    <view class="tiny muted">
+      由后端定时任务在课前推送服务通知，需要部署 server/ 目录并在公众平台申请订阅消息模板。
+      {{hasTemplate ? '' : '当前还没有配置模板 ID。'}}
+    </view>
+    <view class="row gap16 mt16">
+      <view class="btn-plain flex1" bindtap="requestSubscribe">
+        {{settings.subscribed ? '已开启（重新授权）' : '开启课前通知'}}
+      </view>
+      <view class="btn-plain flex1" bindtap="showHelp">配置说明</view>
+    </view>
+    <view class="row gap16 mt16" wx:if="{{serverEnabled}}">
+      <view class="btn-ghost flex1" bindtap="pushToServer">上传课表</view>
+      <view class="btn-ghost flex1" bindtap="pullFromServer">拉取课表</view>
+    </view>
+  </view>
+
+  <!-- ============ 学期设置 ============ -->
+  <view class="card">
+    <view class="card-title">学期设置</view>
+
+    <view class="row-between">
+      <text>学期名称</text>
+      <input class="inline-input" value="{{settings.termName}}" bindinput="onTermNameInput" placeholder="如 2026 秋" />
+    </view>
+
+    <view class="row-between mt16">
+      <text>开学第一周周一</text>
+      <picker mode="date" value="{{termStart}}" bindchange="onTermStartChange">
+        <view class="pick-val">{{termStart}}</view>
+      </picker>
+    </view>
+
+    <view class="row-between mt16">
+      <text>学期总周数</text>
+      <picker mode="selector" range="{{weekCountOptions}}" value="{{totalWeeksIndex}}" bindchange="onTotalWeeksChange">
+        <view class="pick-val">{{weekCountOptions[totalWeeksIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="tiny muted mt16">开学日期填错会导致周次、单双周判断出错，请务必核对。</view>
+  </view>
+
+  <!-- ============ 数据管理 ============ -->
+  <view class="card">
+    <view class="card-title">数据管理</view>
+
+    <view class="row-between stat-row">
+      <text class="muted">课程数量</text><text class="strong">{{courseCount}} 门</text>
+    </view>
+    <view class="row-between stat-row">
+      <text class="muted">全校占用记录</text><text class="strong">{{occupancyCount}} 条</text>
+    </view>
+    <view class="row-between stat-row">
+      <text class="muted">教室字典</text><text class="strong">{{classCount}} 间</text>
+    </view>
+
+    <view class="btn-ghost mt16" bindtap="gotoEdit">编辑课表 / 批量导入</view>
+    <view class="row gap16 mt16">
+      <view class="btn-plain flex1" bindtap="exportData">导出备份</view>
+      <view class="btn-plain flex1" bindtap="importData">导入备份</view>
+    </view>
+    <view class="row gap16 mt16">
+      <view class="btn-plain flex1" bindtap="clearRemindRecords">清空提醒记录</view>
+      <view class="btn-plain flex1" bindtap="restoreDemo">恢复示例数据</view>
+    </view>
+    <view class="btn-plain mt16 danger" bindtap="clearCourses">清空全部课程</view>
+
+    <view class="tiny muted mt16">
+      所有数据默认只保存在手机本地。只有当你主动点击「上传课表」时，数据才会发到你自己的服务器。
+    </view>
+  </view>
+
+  <!-- ============ 关于 ============ -->
+  <view class="card">
+    <view class="card-title">关于</view>
+    <view class="row-between stat-row">
+      <text class="muted">版本</text><text>{{version}}</text>
+    </view>
+    <view class="row-between stat-row">
+      <text class="muted">空教室数据来源</text>
+      <text>{{occupancyCount > 0 ? '我的课表 + 全校占用表' : '仅我的课表（可能偏多）'}}</text>
+    </view>
+    <view class="btn-plain mt16" bindtap="showHelp">查看使用说明</view>
+  </view>
+
+</view>

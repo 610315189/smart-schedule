@@ -1,0 +1,211 @@
+/* ============ 周次切换 ============ */
+.nav-btn {
+  font-size: 26rpx;
+  color: #2b5cff;
+  padding: 12rpx 20rpx;
+}
+.week-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 8rpx 20rpx;
+}
+
+.warn {
+  background: #fff2e6;
+  color: #d9480f;
+  font-size: 24rpx;
+  border-radius: 16rpx;
+  padding: 18rpx 24rpx;
+  margin-bottom: 20rpx;
+  line-height: 1.5;
+}
+
+/* ============ 网格 ============ */
+.grid-card {
+  padding: 16rpx 12rpx 20rpx;
+}
+
+.grid-head {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 12rpx;
+  border-bottom: 1rpx solid #eef0f5;
+}
+
+.corner {
+  width: 88rpx;
+  flex: none;
+}
+
+.head-day {
+  text-align: center;
+  flex: none;
+  box-sizing: border-box;
+}
+
+.hd-name {
+  font-size: 24rpx;
+  color: #46506b;
+  font-weight: 600;
+}
+.hd-date {
+  font-size: 20rpx;
+  color: #a3aab9;
+}
+.head-today .hd-name { color: #2b5cff; }
+.head-today .hd-date { color: #2b5cff; }
+
+.grid-body {
+  display: flex;
+  position: relative;
+}
+
+.period-col {
+  width: 88rpx;
+  flex: none;
+}
+
+.period-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-bottom: 1rpx solid #f4f6fa;
+}
+.p-no {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #46506b;
+}
+.p-time {
+  font-size: 18rpx;
+  color: #a3aab9;
+  margin-top: 4rpx;
+}
+
+.day-area {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.h-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1rpx;
+  background: #f4f6fa;
+}
+
+.cell {
+  position: absolute;
+  box-sizing: border-box;
+  border-right: 1rpx solid #f7f8fc;
+}
+.cell:active {
+  background: #f4f7ff;
+}
+
+.block {
+  position: absolute;
+  border-radius: 14rpx;
+  padding: 10rpx 8rpx;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(20, 40, 90, 0.16);
+}
+.block:active { opacity: 0.82; }
+
+.block-name {
+  font-size: 20rpx;
+  font-weight: 600;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.block-room {
+  font-size: 18rpx;
+  opacity: 0.9;
+  margin-top: 6rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3rpx;
+  background: #ff4d4f;
+  z-index: 5;
+}
+.now-line::before {
+  content: '';
+  position: absolute;
+  left: -6rpx;
+  top: -6rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #ff4d4f;
+}
+
+.legend {
+  text-align: center;
+  margin: 4rpx 0 20rpx;
+}
+
+/* ============ 弹层 ============ */
+.mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(16, 22, 38, 0.5);
+  z-index: 900;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 40rpx 36rpx 60rpx;
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(60rpx); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.sheet-title {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+.sheet-sub {
+  font-size: 24rpx;
+  color: #8a93a6;
+  margin: 8rpx 0 24rpx;
+}
+.sheet-line {
+  font-size: 27rpx;
+  color: #46506b;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f4f6fa;
+}
+
+.room-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f4f6fa;
+}

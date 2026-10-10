@@ -1,0 +1,51 @@
+.val {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2b5cff;
+}
+
+.switch-row {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f4f6fa;
+}
+.switch-row:last-of-type { border-bottom: none; }
+
+.stat-row {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f4f6fa;
+  font-size: 27rpx;
+}
+.stat-row:last-of-type { border-bottom: none; }
+
+.inline-input {
+  text-align: right;
+  font-size: 27rpx;
+  color: #46506b;
+  min-width: 320rpx;
+}
+
+.pick-val {
+  font-size: 27rpx;
+  color: #2b5cff;
+  background: #eef2ff;
+  border-radius: 12rpx;
+  padding: 8rpx 20rpx;
+}
+
+.hint {
+  background: #eef2ff;
+  color: #2b5cff;
+  font-size: 24rpx;
+  border-radius: 16rpx;
+  padding: 18rpx 20rpx;
+  line-height: 1.6;
+}
+
+.danger {
+  color: #e03131;
+  background: #ffecef;
+}
+
+slider {
+  margin: 10rpx 0 20rpx;
+}

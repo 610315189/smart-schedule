@@ -1,0 +1,24 @@
+{
+  "description": "本地个人配置，不会被提交到版本库",
+  "projectname": "wechat-smart-schedule",
+  "setting": {
+    "compileHotReLoad": true,
+    "urlCheck": false,
+    "coverView": true,
+    "lazyloadPlaceholderEnable": false,
+    "skylineRenderEnable": false,
+    "preloadBackgroundData": false,
+    "autoAudits": false,
+    "useApiHook": true,
+    "showShadowRootInWxmlPanel": true,
+    "useStaticServer": false,
+    "useLanDebug": false,
+    "showES6CompileOption": false,
+    "useGlassEaselForWxml": false,
+    "checkInvalidKey": true,
+    "ignoreDevUnusedFiles": true,
+    "bigPackageSizeSupport": false
+  },
+  "libVersion": "3.17.3",
+  "condition": {}
+}

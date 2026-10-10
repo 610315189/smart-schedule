@@ -1,0 +1,120 @@
+﻿<view class="page">
+
+  <!-- ============ 顶部主卡：倒计时 ============ -->
+  <view class="hero hero-{{mode}}">
+    <view class="row-between hero-top">
+      <text class="hero-date">{{dateLabel}}</text>
+      <text class="hero-week">{{weekText}}</text>
+    </view>
+
+    <block wx:if="{{lesson}}">
+      <view class="hero-label">{{countdownLabel}}</view>
+      <view class="hero-countdown">{{countdown}}</view>
+      <view class="hero-course">
+        <view class="hero-name">{{lesson.name}}</view>
+        <view class="hero-meta">{{lesson.periodText}} · {{lesson.startTime}}-{{lesson.endTime}}</view>
+        <view class="hero-room">📍 {{lesson.room}}<text wx:if="{{lesson.teacher}}"> · {{lesson.teacher}}</text></view>
+      </view>
+      <view class="hero-actions">
+        <view class="hero-btn" bindtap="copyRoom">复制教室</view>
+        <view class="hero-btn" bindtap="addCurrentToCalendar">加入日历</view>
+        <view class="hero-btn" bindtap="gotoClassroom">找空教室</view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="hero-label">近期没有课程安排</view>
+      <view class="hero-countdown">--:--:--</view>
+      <view class="hero-actions">
+        <view class="hero-btn" bindtap="gotoClassroom">去找空教室自习</view>
+      </view>
+    </block>
+  </view>
+
+  <!-- ============ 现在去哪自习 ============ -->
+  <view class="card" wx:if="{{studyRooms.length}}">
+    <view class="card-title">
+      <text>现在去哪自习</text>
+      <text class="sub">{{studyContext}}</text>
+    </view>
+    <view class="room-line" wx:for="{{studyRooms}}" wx:key="id">
+      <view class="room-line-main">
+        <view class="strong">{{item.name}}</view>
+        <view class="tiny muted mt8">{{item.building}} · {{item.floor}} 楼 · {{item.capacityText}} · {{item.typeLabel}}</view>
+      </view>
+      <view class="tag tag-green">{{item.freeSpanText}}</view>
+    </view>
+    <view class="btn-ghost mt16" bindtap="gotoClassroom">查看全部空教室</view>
+  </view>
+
+  <!-- ============ 今日课程时间轴 ============ -->
+  <view class="card">
+    <view class="card-title">
+      <text>今日课程</text>
+      <text class="sub">共 {{timeline.length}} 节</text>
+    </view>
+
+    <view wx:if="{{timeline.length === 0}}" class="empty">今天没有课，去自习吧</view>
+
+    <view
+      wx:for="{{timeline}}"
+      wx:key="id"
+      class="tl-item tl-{{item.status}}"
+      bindtap="onCourseTap"
+      data-index="{{index}}"
+    >
+      <view class="tl-time">
+        <view class="tl-start">{{item.startTime}}</view>
+        <view class="tl-end">{{item.endTime}}</view>
+      </view>
+      <view class="tl-bar" style="background:{{item.color}}"></view>
+      <view class="flex1">
+        <view class="strong ellipsis">{{item.name}}</view>
+        <view class="tiny muted mt8">{{item.periodText}} · {{item.room}}</view>
+        <view class="tiny muted" wx:if="{{item.note}}">📌 {{item.note}}</view>
+      </view>
+      <view class="tl-status tl-status-{{item.status}}">{{item.statusText}}</view>
+    </view>
+  </view>
+
+  <!-- ============ 今日空堂 ============ -->
+  <view class="card" wx:if="{{freeSlots.length}}">
+    <view class="card-title">
+      <text>今日空堂</text>
+      <text class="sub">没课的时间段</text>
+    </view>
+    <view class="slot-row" wx:for="{{freeSlots}}" wx:key="start">
+      <view class="col">
+        <text class="strong">{{item.periodText}}</text>
+        <text class="tiny muted">{{item.startTime}} - {{item.endTime}}</text>
+      </view>
+      <view class="tag tag-orange">空</view>
+    </view>
+    <view class="btn-ghost mt16" bindtap="gotoClassroom">看看这些时段哪间教室空着</view>
+  </view>
+
+  <!-- ============ 课表编辑入口 ============ -->
+  <view class="card card-tight">
+    <view class="row-between" bindtap="gotoEdit">
+      <view class="col">
+        <text class="strong">编辑课表 / 批量导入</text>
+        <text class="tiny muted mt8">换成自己的课表，提醒和空教室才准确</text>
+      </view>
+      <text class="muted">›</text>
+    </view>
+  </view>
+
+</view>
+
+<!-- ============ 课前提醒弹层 ============ -->
+<view class="alert-mask" wx:if="{{alert}}" catchtouchmove="noop">
+  <view class="alert-box {{alert.urgent ? 'alert-urgent' : ''}}">
+    <view class="alert-icon">{{alert.urgent ? '⏰' : '🔔'}}</view>
+    <view class="alert-title">{{alert.title}}</view>
+    <view class="alert-content">{{alert.content}}</view>
+    <view class="row gap16 mt24">
+      <view class="btn-plain flex1" bindtap="closeAlert">知道了</view>
+      <view class="btn-primary flex1" bindtap="addCurrentToCalendar">加入日历</view>
+    </view>
+  </view>
+</view>

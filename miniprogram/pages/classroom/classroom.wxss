@@ -1,0 +1,139 @@
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 24rpx;
+  color: #8a93a6;
+  margin-bottom: 12rpx;
+}
+
+.pick-box {
+  background: #f2f4f8;
+  border-radius: 16rpx;
+  padding: 18rpx 20rpx;
+  font-size: 26rpx;
+  text-align: center;
+  color: #1c2333;
+}
+
+/* ============ 统计条 ============ */
+.stat-bar {
+  background: linear-gradient(135deg, #3b6bff, #2b5cff);
+  color: #fff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+}
+.stat-line {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+.stat-main {
+  display: flex;
+  align-items: baseline;
+  margin-top: 10rpx;
+}
+.stat-num {
+  font-size: 64rpx;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.stat-unit {
+  font-size: 28rpx;
+  margin-left: 8rpx;
+}
+.stat-divider {
+  margin: 0 16rpx;
+  opacity: 0.5;
+}
+.stat-sub {
+  font-size: 24rpx;
+  opacity: 0.92;
+}
+
+.warn {
+  background: #fff2e6;
+  color: #d9480f;
+  font-size: 24rpx;
+  border-radius: 16rpx;
+  padding: 18rpx 24rpx;
+  margin-bottom: 20rpx;
+  line-height: 1.6;
+}
+
+/* ============ 教室卡片 ============ */
+.room-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 26rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(20, 40, 90, 0.06);
+}
+.room-card:active {
+  background: #fafbff;
+}
+
+.room-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1c2333;
+}
+
+.legend {
+  text-align: center;
+  margin: 8rpx 0 24rpx;
+}
+
+/* ============ 弹层 ============ */
+.mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(16, 22, 38, 0.5);
+  z-index: 900;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 40rpx 36rpx 60rpx;
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(60rpx); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.sheet-title {
+  font-size: 38rpx;
+  font-weight: 700;
+}
+.sheet-sub {
+  font-size: 24rpx;
+  color: #8a93a6;
+  margin: 8rpx 0 16rpx;
+}
+
+.section-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #46506b;
+  margin-bottom: 12rpx;
+}
+
+.run-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #f4f6fa;
+}

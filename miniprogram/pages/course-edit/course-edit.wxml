@@ -1,0 +1,219 @@
+<view class="page">
+
+  <!-- ============ 顶部 tab ============ -->
+  <view class="tabs">
+    <view class="tab {{tab === 'list' ? 'active' : ''}}" data-tab="list" bindtap="switchTab">
+      课程列表（{{total}}）
+    </view>
+    <view class="tab {{tab === 'import' ? 'active' : ''}}" data-tab="import" bindtap="switchTab">
+      批量导入
+    </view>
+  </view>
+
+  <!-- ============ 课程列表 ============ -->
+  <block wx:if="{{tab === 'list'}}">
+    <view class="warn" wx:if="{{conflictText}}">⚠️ {{conflictText}}</view>
+
+    <view class="card" wx:if="{{total === 0}}">
+      <view class="empty">还没有课程。点右下角「+」添加，或到「批量导入」粘贴课表</view>
+    </view>
+
+    <view class="card" wx:for="{{groups}}" wx:for-item="g" wx:key="day">
+      <view class="card-title">{{g.label}}</view>
+      <view class="course-line" wx:for="{{g.courses}}" wx:for-item="c" wx:key="id">
+        <view class="color-dot" style="background:{{c.color}}"></view>
+        <view class="flex1" bindtap="openEdit" data-id="{{c.id}}">
+          <view class="row">
+            <text class="strong">{{c.name}}</text>
+            <text class="tag tag-red" wx:if="{{c.unknownRoom}}">教室未登记</text>
+          </view>
+          <view class="tiny muted mt8">{{c.periodText}} · {{c.timeText}} · {{c.roomId}} · {{c.weekText}}</view>
+          <view class="tiny muted" wx:if="{{c.note}}">📌 {{c.note}}</view>
+        </view>
+        <view class="del-btn" catchtap="deleteCourse" data-id="{{c.id}}">删除</view>
+      </view>
+    </view>
+
+    <view class="legend tiny muted">点击课程可编辑；长按无效，删除请点右侧按钮。</view>
+  </block>
+
+  <!-- ============ 批量导入 ============ -->
+  <block wx:if="{{tab === 'import'}}">
+
+    <!-- 方式一：文件导入 -->
+    <view class="card">
+      <view class="card-title">
+        <text>从文件导入</text>
+        <text class="sub">Excel / Word / CSV</text>
+      </view>
+      <view class="tiny muted">
+        支持 .xlsx .docx .csv .txt。旧版 .xls / .doc 请先用 Office 或 WPS「另存为」新格式。
+      </view>
+      <view class="tiny muted mt8">
+        可识别的课表：① 表头含 课程名称 / 星期 / 节次 / 教室 / 周次；
+        ②「上方是星期、左侧是节次」的课表网格（含合并单元格）。
+      </view>
+
+      <view class="btn-primary mt16" bindtap="chooseFile">
+        {{fileInfo.name ? '重新选择文件' : '选择文件（从微信聊天记录）'}}
+      </view>
+
+      <view class="file-box mt16" wx:if="{{fileInfo.name}}">
+        <view class="row-between">
+          <view class="flex1">
+            <view class="strong ellipsis">{{fileInfo.name}}</view>
+            <view class="tiny muted" wx:if="{{fileInfo.sizeText}}">{{fileInfo.sizeText}}</view>
+          </view>
+          <view class="del-btn" bindtap="clearFile">移除</view>
+        </view>
+      </view>
+
+      <view class="msg msg-{{fileMessageType}} mt16" wx:if="{{fileMessage}}">{{fileMessage}}</view>
+      <view class="tiny muted mt16" wx:if="{{parsing}}">正在解析，请稍候…</view>
+    </view>
+
+    <!-- 方式二：粘贴文本 -->
+    <view class="card">
+      <view class="card-title">粘贴文本导入</view>
+      <view class="tiny muted">每行一条：课程名,星期,起始节,结束节,教室,周次</view>
+      <view class="tiny muted mt8">示例：高等数学(上),周一,1,2,A301,1-16</view>
+      <view class="tiny muted">也支持：程序设计基础 周三 5-6 A301 1-16周</view>
+      <textarea
+        class="import-area"
+        value="{{importText}}"
+        bindinput="onImportInput"
+        placeholder="在此粘贴课表，每行一条&#10;以 # 开头的行会被忽略"
+        maxlength="-1"
+        auto-height
+      />
+      <view class="row gap16 mt16">
+        <view class="btn-plain flex1" bindtap="useSample">填入示例</view>
+        <view class="btn-primary flex1" bindtap="parseImport">解析</view>
+      </view>
+    </view>
+
+    <!-- 解析预览 -->
+    <view class="card" wx:if="{{importPreview.length}}">
+      <view class="card-title">
+        <text>解析预览</text>
+        <text class="sub">{{importPreview.length}} 条</text>
+      </view>
+      <view class="import-msg" wx:if="{{importMessage}}">{{importMessage}}</view>
+
+      <view class="room-fix" wx:if="{{unknownRooms.length}}">
+        <view class="tiny">⚠ 有 {{unknownRooms.length}} 间教室不在教室字典里：{{unknownRoomText}}</view>
+        <view class="tiny muted mt8">不补进字典的话，这些教室不会出现在「空教室」查询结果里。</view>
+        <view class="btn-ghost btn-mini mt8" bindtap="addUnknownRooms">一键加入教室字典</view>
+      </view>
+
+      <view class="pv-row" wx:for="{{importPreview}}" wx:key="idx">
+        <view class="flex1">
+          <view class="row">
+            <text class="strong">{{item.name}}</text>
+            <text class="tag tag-orange" wx:if="{{item.hasWarning}}">需确认 {{item.confidence}}%</text>
+            <text class="tag tag-green" wx:elif="{{item.confidence === 100}}">字段完整</text>
+          </view>
+          <view class="tiny muted">
+            {{item.day}} {{item.periodText}} · {{item.roomId}}<text wx:if="{{item.teacher}}"> · {{item.teacher}}</text> · {{item.weekText}}
+          </view>
+          <view class="tiny warn-text" wx:if="{{item.hasWarning}}">⚠ {{item.warnings}}</view>
+        </view>
+      </view>
+      <view class="btn-primary mt24" bindtap="doImport">确认导入</view>
+    </view>
+  </block>
+
+  <!-- 新增按钮 -->
+  <view class="fab" wx:if="{{tab === 'list'}}" bindtap="openAdd">＋</view>
+
+</view>
+
+<!-- ============ 新增 / 编辑表单 ============ -->
+<view class="mask" wx:if="{{form.show}}" catchtouchmove="noop" bindtap="closeForm">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-title">{{form.isEdit ? '编辑课程' : '新增课程'}}</view>
+
+    <view class="f-label">课程名称</view>
+    <input class="f-input" value="{{form.name}}" data-field="name" bindinput="onFormInput" placeholder="如 高等数学(上)" />
+
+    <view class="f-label">任课教师</view>
+    <input class="f-input" value="{{form.teacher}}" data-field="teacher" bindinput="onFormInput" placeholder="选填" />
+
+    <view class="f-row">
+      <view class="flex1">
+        <view class="f-label">星期</view>
+        <picker mode="selector" range="{{dayOptions}}" value="{{form.dayIndex}}" data-field="dayIndex" bindchange="onFormPicker">
+          <view class="f-pick">{{dayOptions[form.dayIndex]}}</view>
+        </picker>
+      </view>
+      <view class="flex1">
+        <view class="f-label">教室</view>
+        <picker mode="selector" range="{{roomOptions}}" value="{{form.roomIndex}}" data-field="roomIndex" bindchange="onFormPicker">
+          <view class="f-pick">{{roomOptions[form.roomIndex]}}</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="f-row">
+      <view class="flex1">
+        <view class="f-label">起始节次</view>
+        <picker mode="selector" range="{{periodOptions}}" value="{{form.startIndex}}" data-field="startIndex" bindchange="onFormPicker">
+          <view class="f-pick">{{periodOptions[form.startIndex]}}</view>
+        </picker>
+      </view>
+      <view class="flex1">
+        <view class="f-label">结束节次</view>
+        <picker mode="selector" range="{{periodOptions}}" value="{{form.endIndex}}" data-field="endIndex" bindchange="onFormPicker">
+          <view class="f-pick">{{periodOptions[form.endIndex]}}</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="f-row">
+      <view class="flex1">
+        <view class="f-label">起始周</view>
+        <picker mode="selector" range="{{weekOptions}}" value="{{form.weekStartIndex}}" data-field="weekStartIndex" bindchange="onFormPicker">
+          <view class="f-pick">{{weekOptions[form.weekStartIndex]}}</view>
+        </picker>
+      </view>
+      <view class="flex1">
+        <view class="f-label">结束周</view>
+        <picker mode="selector" range="{{weekOptions}}" value="{{form.weekEndIndex}}" data-field="weekEndIndex" bindchange="onFormPicker">
+          <view class="f-pick">{{weekOptions[form.weekEndIndex]}}</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="f-label">单双周</view>
+    <view class="chip-row">
+      <view
+        class="chip {{form.parityIndex === index ? 'active' : ''}}"
+        wx:for="{{parityOptions}}"
+        wx:key="*this"
+        data-field="parityIndex"
+        data-index="{{index}}"
+        bindtap="onParityTap"
+      >{{item}}</view>
+    </view>
+
+    <view class="f-label">颜色</view>
+    <view class="color-row">
+      <view
+        class="color-item {{form.colorIndex === index ? 'sel' : ''}}"
+        wx:for="{{colors}}"
+        wx:key="*this"
+        style="background:{{item}}"
+        data-index="{{index}}"
+        bindtap="pickColor"
+      ></view>
+    </view>
+
+    <view class="f-label">备注</view>
+    <input class="f-input" value="{{form.note}}" data-field="note" bindinput="onFormInput" placeholder="如 带实验报告 / 需自带电脑" />
+
+    <view class="row gap16 mt24">
+      <view class="btn-plain flex1" bindtap="closeForm">取消</view>
+      <view class="btn-primary flex1" bindtap="saveForm">保存</view>
+    </view>
+  </view>
+</view>
