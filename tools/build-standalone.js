@@ -45,16 +45,17 @@ html = html.replace('</head>', replacer(
   '  <link rel="apple-touch-icon" href="' + icon192 + '">\n' +
   '</head>'));
 
-/* 3) 内联 CSS */
+/* 3) 内联 CSS（允许带 ?v= 版本参数） */
 const css = read('css/app.css');
-html = html.replace(/<link rel="stylesheet" href="css\/app\.css">/,
+html = html.replace(/<link rel="stylesheet" href="css\/app\.css(?:\?[^"]*)?">/,
   replacer('<style>\n' + css + '\n</style>'));
 
-/* 4) 内联 JS（顺序必须与 index.html 一致） */
+/* 4) 内联 JS（顺序必须与 index.html 一致；允许带 ?v= 版本参数） */
 const scripts = ['js/wx-shim.js', 'js/bundle.js', 'js/ics.js', 'js/ui.js', 'js/app.js'];
 scripts.forEach(function (src) {
   const code = read(src);
-  const re = new RegExp('<script src="' + src.replace(/\//g, '\\/') + '"></script>');
+  const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('<script src="' + escaped + '(?:\\?[^"]*)?"></script>');
   if (!re.test(html)) {
     throw new Error('index.html 里找不到 <script src="' + src + '">');
   }

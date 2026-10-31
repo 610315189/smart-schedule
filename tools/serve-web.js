@@ -101,6 +101,28 @@ const server = http.createServer(function (req, res) {
       res.end('500 读取失败');
       return;
     }
+
+    // 给 HTML 注入本机局域网地址，页面里的「分享二维码」才能生成手机可访问的链接
+    if (ext === '.html') {
+      const ips = lanAddresses();
+      const host = ips.length ? ips[0].ip : '';
+      const inject = '<script>window.__SS_HOST__=' + JSON.stringify({
+        lan: host,
+        port: PORT,
+      }) + ';</script>';
+      let html = buf.toString('utf8');
+      html = html.replace('</head>', inject + '\n</head>');
+      const out = Buffer.from(html, 'utf8');
+      res.writeHead(200, {
+        'Content-Type': type,
+        'Content-Length': out.length,
+        'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': '*',
+      });
+      res.end(out);
+      return;
+    }
+
     res.writeHead(200, {
       'Content-Type': type,
       'Content-Length': buf.length,

@@ -885,6 +885,30 @@
     html += '<div class="tiny muted mt12">所有数据只保存在这台设备的浏览器里，不会上传到任何服务器。</div>';
     html += '</section>';
 
+    // 分享
+    var shareUrl = shareBaseUrl();
+    html += '<section class="card"><div class="card-title"><span>分享给同学</span><span class="sub">扫码或输网址打开</span></div>';
+    if (isLocalhostUrl(shareUrl)) {
+      html += '<div class="warn">当前是用 localhost 打开的，这个地址别人访问不了。' +
+        '请改用局域网地址（如 http://192.168.x.x:8080）打开本页，或运行 ' +
+        'node tools/make-qrcode.js 生成二维码图片。</div>';
+    }
+    html += '<div class="tiny muted">让他们用手机浏览器打开这个地址（同一 WiFi）：</div>';
+    html += '<div class="mt8" style="font-size:13px;word-break:break-all;font-weight:600">' + esc(shareUrl) + '</div>';
+    html += '<div class="mt12" style="text-align:center">' +
+      '<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=' +
+      encodeURIComponent(shareUrl) + '" ' +
+      'style="width:200px;height:200px;border-radius:12px;background:#fff;padding:6px" ' +
+      'alt="扫码打开课表" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">' +
+      '<div class="tiny muted" style="display:none">（二维码需要联网加载，可直接把上面的地址发给同学）</div>' +
+      '</div>';
+    html += '<div class="tiny muted mt8" style="text-align:center">手机需和这台电脑连同一个 WiFi；' +
+      '换成公网地址后就不受此限制。</div>';
+    html += '<div class="row gap8 mt12">' +
+      '<button class="btn btn-plain grow" data-action="copy-share-url">复制地址</button>' +
+      '<button class="btn btn-plain grow" data-action="add-to-home">添加到主屏幕</button></div>';
+    html += '</section>';
+
     // 关于
     html += '<section class="card"><div class="card-title">关于</div>' +
       '<div class="field between"><span class="muted">版本</span><span>网页版 1.0</span></div>' +
@@ -908,6 +932,24 @@
       if (c.roomId && !known[c.roomId] && out.indexOf(c.roomId) < 0) out.push(c.roomId);
     });
     return out;
+  }
+
+  /**
+   * 用来分享给别人访问的地址。
+   * 本地开发服务器会往页面注入 window.__SS_HOST__（本机局域网 IP），
+   * 这样即使自己用 localhost 打开，二维码里也是手机能访问的地址。
+   */
+  function shareBaseUrl() {
+    var host = window.__SS_HOST__;
+    if (host && host.lan) {
+      return 'http://' + host.lan + ':' + host.port + '/';
+    }
+    var base = location.origin + location.pathname.replace(/index\.html$/, '');
+    return base.replace(/\/$/, '') + '/';
+  }
+
+  function isLocalhostUrl(url) {
+    return /\/\/(localhost|127\.0\.0\.1|\[::1\])/.test(url);
   }
 
   /* ============================================================
@@ -1168,6 +1210,8 @@
     },
 
     'export-ics': function () { exportICS(); },
+
+    'copy-share-url': function () { copyText(shareBaseUrl()); },
 
     'export-data': function () {
       var payload = {

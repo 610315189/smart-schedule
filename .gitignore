@@ -32,3 +32,7 @@ qrcode-lan.png
 *.tmp
 dist/
 build/
+
+# 部署包（由 web/ 目录打包生成，跑一次命令就能重建）
+web-deploy.zip
+web-deploy/

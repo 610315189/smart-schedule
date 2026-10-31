@@ -33,6 +33,8 @@
   function closeOverlay() {
     if (!overlayEl) return;
     overlayEl.hidden = true;
+    // 双保险：不依赖 CSS 优先级，直接用行内样式隐藏
+    overlayEl.style.display = 'none';
     overlayEl.innerHTML = '';
     overlayEl.classList.remove('center');
     if (escHandler) {
@@ -45,6 +47,7 @@
     if (!overlayEl) return;
     overlayEl.innerHTML = innerHtml;
     overlayEl.hidden = false;
+    overlayEl.style.display = 'flex';
     if (center) overlayEl.classList.add('center');
     else overlayEl.classList.remove('center');
 

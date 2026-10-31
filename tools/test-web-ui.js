@@ -230,6 +230,48 @@ load(path.join(WEB, 'js/app.js'));
 const after = JSON.stringify(store.dump().ss_courses);
 ok(before === after, '重复加载不会重置用户数据');
 
+/* ============================================================
+   8. CSS 可交互性检查
+   （这一节是因为踩过一个真实的坑：弹层遮罩 .overlay 设了 display:flex，
+     把浏览器默认的 [hidden]{display:none} 覆盖掉了，结果遮罩一直铺满
+     全屏，手机上"能看但点不动"。必须在构建层面守住。）
+   ============================================================ */
+section('8. CSS 可交互性（防"能看不能点"）');
+const cssText = fs.readFileSync(path.join(WEB, 'css/app.css'), 'utf8');
+const htmlText = fs.readFileSync(path.join(WEB, 'index.html'), 'utf8');
+const uiText = fs.readFileSync(path.join(WEB, 'js/ui.js'), 'utf8');
+
+ok(/\[hidden\]\s*\{\s*display:\s*none\s*!important/.test(cssText),
+  'CSS 有 [hidden]{display:none !important} 兜底规则');
+
+const overlayTag = (htmlText.match(/<div[^>]*id="overlay"[^>]*>/) || [''])[0];
+ok(/hidden/.test(overlayTag), '遮罩容器默认带 hidden 属性', overlayTag);
+const toastTag = (htmlText.match(/<div[^>]*id="toast"[^>]*>/) || [''])[0];
+ok(/hidden/.test(toastTag), 'Toast 容器默认带 hidden 属性');
+
+ok(/style\.display\s*=\s*'none'/.test(uiText), 'ui.js 关闭弹层时显式设置 display:none');
+ok(/style\.display\s*=\s*'flex'/.test(uiText), 'ui.js 打开弹层时显式设置 display:flex');
+
+// 任何 position:fixed + inset:0 的全屏元素，若设置了 display，就必须有 [hidden] 兜底
+const fullScreen = [];
+const blockRe = /\.([a-zA-Z0-9_-]+)\s*\{([^}]*)\}/g;
+let bm;
+while ((bm = blockRe.exec(cssText)) !== null) {
+  const body = bm[2];
+  if (/position:\s*fixed/.test(body) && /inset:\s*0/.test(body)) {
+    fullScreen.push({ cls: bm[1], hasDisplay: /display:\s*(flex|block|grid)/.test(body) });
+  }
+}
+ok(fullScreen.length > 0, '找到全屏遮罩元素', fullScreen.map(function (x) { return x.cls; }));
+const risky = fullScreen.filter(function (x) { return x.hasDisplay; });
+const guarded = /\[hidden\]\s*\{\s*display:\s*none\s*!important/.test(cssText);
+ok(risky.length === 0 || guarded,
+  '全屏元素即使设了 display 也不会挡住点击（有 [hidden] 兜底）',
+  risky.map(function (x) { return x.cls; }));
+
+// 资源引用带版本号，避免手机缓存旧文件
+ok(/\?v=/.test(htmlText), 'index.html 资源引用带缓存版本号');
+
 console.log('\n============================================');
 console.log('  通过 ' + pass + ' 项，失败 ' + fail + ' 项');
 if (fail) {

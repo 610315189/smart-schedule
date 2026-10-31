@@ -51,6 +51,13 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/*
+ * 关键：hidden 属性必须真的能隐藏元素。
+ * 浏览器默认样式是 [hidden]{display:none}，但类选择器（如 .overlay{display:flex}）
+ * 优先级更高会把它覆盖掉——结果是弹层遮罩一直铺满全屏，拦截所有点击。
+ */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
