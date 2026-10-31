@@ -1,6 +1,10 @@
 ﻿# 智能课表小程序（WeChat Mini Program）
 
-一个原生微信小程序：**上课时间提醒防迟到误课** + **空教室查询用于自习**。
+一个**智能课表**应用：**上课时间提醒防迟到误课** + **空教室查询用于自习**。提供两种形态：
+- **网页版（H5）**：手机浏览器扫码即用，不需要 AppID / 审核 / 上传，可装到主屏幕离线使用
+- **微信小程序版**：原生小程序，可用系统日历与订阅消息做系统级提醒
+
+两者共用同一套核心算法（课表引擎、空教室反查、Excel/Word 解析），结果完全一致。
 
 数据默认全部存在手机本地，离线可用；可选部署一个零依赖 Node 后端开启微信服务通知推送。
 
@@ -19,8 +23,35 @@
 
 ---
 
-## 二、快速开始
+## 二、网页版（推荐先试这个）
 
+```bash
+# 1) 启动本地服务（局域网可访问）
+node tools/serve-web.js
+
+# 2) 另开一个终端，生成二维码
+node tools/make-qrcode.js
+```
+
+终端会打印类似：
+
+```
+本机访问：http://localhost:8080
+局域网访问：http://192.168.1.10:8080   （WLAN）  ← 推荐（手机扫这个）
+```
+
+生成的 `qrcode-lan.png` 用手机相机/微信扫一下即可打开（手机连同一个 WiFi）。
+不需要微信开发者工具，也不需要 AppID。
+
+**部署到公网**：`web/` 是纯静态目录，直接上传到任何静态空间（Nginx / GitHub Pages /
+Cloudflare Pages / Vercel）即可；或者用 `node tools/build-standalone.js` 生成
+**单文件版** `web/standalone.html`（CSS/JS 全内联，一个文件随处可用）。
+
+详细说明见 [docs/网页版说明.md](docs/网页版说明.md)。
+
+---
+
+## 三、快速开始（微信小程序版）
 ### 1. 用微信开发者工具打开
 
 1. 打开 **微信开发者工具** → 导入项目
@@ -80,7 +111,7 @@
 
 ---
 
-## 三、目录结构
+## 四、目录结构
 
 ```
 wechat-smart-schedule/
@@ -120,12 +151,31 @@ wechat-smart-schedule/
 ├── server/                          可选后端（零依赖 Node）→ 微信订阅消息推送
 │   ├── src/{index,wechat,reminder,store,schedule,config}.js
 │   └── .env.example
-├── tools/                           自测脚本（Node / Python）
+├── web/                             网页版（纯静态，可直接部署）
+│   ├── index.html                   页面骨架（含底部导航）
+│   ├── manifest.json                PWA 清单（可添加到主屏幕）
+│   ├── sw.js                        Service Worker（离线缓存）
+│   ├── standalone.html              单文件版（构建产物，一个文件随处可用）
+│   ├── css/app.css                  移动端样式 + 深色模式
+│   ├── icons/                       PWA 图标 192 / 512 / maskable
+│   └── js/
+│       ├── wx-shim.js               浏览器版 wx API（存储/震动/提示音）
+│       ├── bundle.js                从 miniprogram 打包的核心逻辑（构建产物）
+│       ├── ics.js                   .ics 日历导出
+│       ├── ui.js                    Toast / 弹层 / 确认框
+│       └── app.js                   路由 + 五个视图 + 提醒
+├── tools/                           构建与自测脚本（Node / Python）
 │   ├── test-core.js                 核心逻辑测试（周次、提醒、空教室…）
 │   ├── test-server.js               后端接口测试 + 两端算法一致性
 │   ├── test-inflate.js              DEFLATE 解压与 CRC32（与 Node zlib 交叉验证）
 │   ├── test-import.js               Excel / Word / CSV 导入测试
 │   ├── check-wxml.js                小程序静态检查（事件绑定/模板语法）
+│   ├── build-web.js                 网页版：把小程序逻辑打包成 bundle
+│   ├── build-standalone.js          网页版：生成单文件版
+│   ├── serve-web.js                 网页版：零依赖静态服务器
+│   ├── make-qrcode.js               生成访问二维码
+│   ├── test-web.js                  网页版核心逻辑测试
+│   ├── test-web-ui.js               网页版 UI 渲染测试
 │   ├── make-samples.py              生成 Excel/Word 测试样本
 │   └── samples/                     生成的样本文件
 └── docs/
@@ -139,7 +189,7 @@ wechat-smart-schedule/
 
 ---
 
-## 四、功能细节
+## 五、功能细节
 
 ### 4.1 防迟到 / 防误课：三道保险
 
@@ -183,7 +233,7 @@ wechat-smart-schedule/
 
 ---
 
-## 五、后端（可选）：微信服务通知
+## 六、后端（可选）：微信服务通知
 
 如果希望"小程序没打开也能收到微信通知"，部署 `server/`：
 
@@ -211,7 +261,7 @@ const SERVER = {
 
 ---
 
-## 六、自测
+## 七、自测
 
 ```bash
 # 1) 核心算法：周次、下一节课、提醒、空教室、日历展开
@@ -240,7 +290,7 @@ node tools/check-wxml.js
 
 ---
 
-## 七、常见问题
+## 八、常见问题
 
 **Q：提醒弹层一直不出现？**
 A：检查「设置」里「页面弹窗提醒」是否开启；以及是否已到提醒范围（默认 30 分钟内）。
@@ -282,7 +332,7 @@ A：`wx.chooseMessageFile` 只能从**微信聊天记录**里选文件。
 
 ---
 
-## 八、技术说明
+## 九、技术说明
 
 - **零依赖**：小程序端不使用任何 npm 包，后端只用 Node 内置模块（`http` / `https` / `fs`），不存在装不上依赖的问题
 - **数据落点**：小程序 `wx.setStorageSync`（换手机不迁移）；后端 `server/data/db.json`

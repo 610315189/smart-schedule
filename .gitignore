@@ -1,14 +1,34 @@
-# Windows
+# ===== 操作系统 =====
 [Dd]esktop.ini
 Thumbs.db
 $RECYCLE.BIN/
-
-# macOS
 .DS_Store
 .fseventsd
 .Spotlight-V100
 .TemporaryItems
 .Trashes
 
-# Node.js
+# ===== Node.js =====
 node_modules/
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# ===== 真实数据（含班级、姓名等个人信息，禁止提交）=====
+# 这是一个真实教务系统导出的课表样本，里面的班级名称/教师姓名属于个人信息。
+# 需要保留的话请先脱敏后再提交。
+tools/samples/sample-jwxt-real.xlsx
+
+# ===== 后端运行时数据与密钥 =====
+# .env 里会填小程序 AppSecret，绝对不能提交
+server/.env
+server/data/
+*.env.local
+
+# ===== 临时产物 =====
+web-shots/
+qrcode-lan.png
+*.log
+*.tmp
+dist/
+build/
