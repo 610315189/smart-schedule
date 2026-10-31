@@ -2,7 +2,7 @@
  * 智能课表 · 网页版核心逻辑 bundle
  * 本文件由 tools/build-web.js 自动生成，请勿手工编辑。
  * 源码位置：miniprogram/{config,data,utils}
- * 生成时间：2026-10-31T00:36:33.144Z
+ * 生成时间：2026-10-31T05:20:20.315Z
  * 模块数：20
  */
 (function (global) {

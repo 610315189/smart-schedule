@@ -77,6 +77,12 @@
     return data.settings;
   }
 
+  function savePeriods(list) {
+    ST.set(ST.KEYS.PERIODS, list);
+    data.periods = list;
+    return list;
+  }
+
   function restoreDemo() {
     saveCourses(SS.courses.COURSES);
     saveClassrooms(SS.classrooms.CLASSROOMS);
@@ -862,6 +868,28 @@
       '<input class="input" type="number" min="8" max="30" style="max-width:110px;text-align:right" value="' + s.totalWeeks + '" data-action="set-total-weeks"></div>';
     html += '<div class="tiny muted mt8">开学日期填错会导致周次和单双周判断出错，请务必核对。</div></section>';
 
+    // 作息时间（每节课几点到几点，不同学校不同，必须可改）
+    html += '<section class="card"><div class="card-title">' +
+      '<span>作息时间</span><span class="sub">第 1~' + data.periods.length + ' 节</span></div>';
+    html += '<div class="tiny muted" style="margin-bottom:6px">点时间可以直接改。改完后倒计时、' +
+      '空教室判断、日历导出都会按新作息计算。</div>';
+    data.periods.forEach(function (p, i) {
+      html += '<div class="field between">' +
+        '<span class="field-label">第 ' + p.period + ' 节</span>' +
+        '<span class="row gap8">' +
+        '<input class="input" type="time" value="' + esc(p.start) + '" ' +
+        'data-action="set-period-start" data-idx="' + i + '" ' +
+        'style="width:104px;padding:7px 8px;text-align:center">' +
+        '<span class="muted tiny">至</span>' +
+        '<input class="input" type="time" value="' + esc(p.end) + '" ' +
+        'data-action="set-period-end" data-idx="' + i + '" ' +
+        'style="width:104px;padding:7px 8px;text-align:center">' +
+        '</span></div>';
+    });
+    html += '<div class="row gap8 mt12">' +
+      '<button class="btn btn-plain grow" data-action="reset-periods">恢复默认作息</button>' +
+      '</div></section>';
+
     // 数据
     var unknownRooms = collectUnknownRooms();
     html += '<section class="card"><div class="card-title">数据管理</div>';
@@ -1186,6 +1214,20 @@
       if (n >= 8 && n <= 30) saveSettings({ totalWeeks: n });
     },
 
+    'set-period-start': function (el) { updatePeriod(el, 'start'); },
+    'set-period-end': function (el) { updatePeriod(el, 'end'); },
+    'reset-periods': function () {
+      UI.confirm({
+        title: '恢复默认作息',
+        content: '会把你改过的节次时间恢复成默认值（8:00 开始，每节 45 分钟），确定吗？',
+      }).then(function (ok) {
+        if (!ok) return;
+        savePeriods(SS.periods.DEFAULT_PERIODS);
+        UI.toast('已恢复默认作息');
+        render();
+      });
+    },
+
     'test-remind': function () {
       var next = S.getNextClass(data.courses, data.classrooms, data.periods, new Date(), data.settings);
       if (!next) { UI.toast('近期没有课程，无法测试'); return; }
@@ -1294,6 +1336,29 @@
     if (!field) return;
     var v = field.querySelector('.field-value');
     if (v) v.textContent = text;
+  }
+
+  /** 修改某一节课的开始/结束时间，带顺序校验 */
+  function updatePeriod(el, field) {
+    var idx = Number(el.getAttribute('data-idx'));
+    if (!data.periods[idx]) return;
+    var list = data.periods.slice();
+    var cur = Object.assign({}, list[idx]);
+    cur[field] = el.value;
+
+    if (!/^\d{2}:\d{2}$/.test(cur.start) || !/^\d{2}:\d{2}$/.test(cur.end)) {
+      UI.toast('时间格式不正确');
+      return;
+    }
+    if (cur.start >= cur.end) {
+      UI.toast('开始时间必须早于结束时间，已还原');
+      render();
+      return;
+    }
+    list[idx] = cur;
+    savePeriods(list);
+    UI.toast('第 ' + cur.period + ' 节：' + cur.start + ' - ' + cur.end);
+    // 不整体重渲染，避免输入框失焦；下次进入页面自然生效
   }
 
   function copyText(text) {

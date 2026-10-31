@@ -15,6 +15,7 @@ Page({
     termStart: '',
     totalWeeksIndex: 8,
     weekCountOptions: WEEK_COUNT_OPTIONS,
+    periods: [],
     courseCount: 0,
     occupancyCount: 0,
     classCount: 0,
@@ -36,6 +37,7 @@ Page({
       settings: s,
       termStart: s.termStartDate,
       totalWeeksIndex: Math.max(0, Math.min(idx, WEEK_COUNT_OPTIONS.length - 1)),
+      periods: g.periods || [],
       courseCount: g.courses.length,
       occupancyCount: (g.occupancy || []).length,
       classCount: g.classrooms.length,
@@ -60,6 +62,53 @@ Page({
     const weeks = Number(WEEK_COUNT_OPTIONS[Number(e.detail.value)].replace(/[^0-9]/g, ''));
     this._save({ totalWeeks: weeks });
     this.setData({ totalWeeksIndex: Number(e.detail.value) });
+  },
+
+  /* ---------------- 作息时间 ---------------- */
+
+  onPeriodStartChange(e) {
+    this._updatePeriod(Number(e.currentTarget.dataset.idx), 'start', e.detail.value);
+  },
+
+  onPeriodEndChange(e) {
+    this._updatePeriod(Number(e.currentTarget.dataset.idx), 'end', e.detail.value);
+  },
+
+  _updatePeriod(idx, field, value) {
+    const list = (this.data.periods || []).map(function (p) { return Object.assign({}, p); });
+    if (!list[idx]) return;
+
+    const next = Object.assign({}, list[idx]);
+    next[field] = value;
+
+    if (!/^\d{2}:\d{2}$/.test(next.start) || !/^\d{2}:\d{2}$/.test(next.end)) {
+      wx.showToast({ title: '时间格式不正确', icon: 'none' });
+      return;
+    }
+    if (next.start >= next.end) {
+      wx.showToast({ title: '开始须早于结束', icon: 'none' });
+      return;
+    }
+
+    list[idx] = next;
+    app.savePeriods(list);
+    this.setData({ periods: list });
+    wx.showToast({ title: '第 ' + next.period + ' 节已更新', icon: 'success' });
+  },
+
+  onResetPeriods() {
+    const that = this;
+    wx.showModal({
+      title: '恢复默认作息',
+      content: '会把你改过的节次时间恢复成默认值（8:00 开始，每节 45 分钟），确定吗？',
+      success(res) {
+        if (!res.confirm) return;
+        const def = require('../../data/periods').DEFAULT_PERIODS;
+        app.savePeriods(def);
+        that.setData({ periods: def });
+        wx.showToast({ title: '已恢复默认', icon: 'success' });
+      },
+    });
   },
 
   /* ---------------- 提醒设置 ---------------- */

@@ -118,6 +118,26 @@
     <view class="tiny muted mt16">开学日期填错会导致周次、单双周判断出错，请务必核对。</view>
   </view>
 
+  <!-- ============ 作息时间 ============ -->
+  <view class="card">
+    <view class="card-title">作息时间</view>
+
+    <view class="tiny muted mb12">点时间可直接修改。改完后倒计时、空教室判断、日历导出都会按新作息计算。</view>
+
+    <view class="period-row" wx:for="{{periods}}" wx:key="period">
+      <text class="period-label">第 {{item.period}} 节</text>
+      <picker mode="time" value="{{item.start}}" data-idx="{{index}}" bindchange="onPeriodStartChange">
+        <view class="time-pill">{{item.start}}</view>
+      </picker>
+      <text class="muted tiny">至</text>
+      <picker mode="time" value="{{item.end}}" data-idx="{{index}}" bindchange="onPeriodEndChange">
+        <view class="time-pill">{{item.end}}</view>
+      </picker>
+    </view>
+
+    <button class="btn-plain mt16" bindtap="onResetPeriods">恢复默认作息</button>
+  </view>
+
   <!-- ============ 数据管理 ============ -->
   <view class="card">
     <view class="card-title">数据管理</view>

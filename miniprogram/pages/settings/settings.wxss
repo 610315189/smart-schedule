@@ -49,3 +49,33 @@
 slider {
   margin: 10rpx 0 20rpx;
 }
+
+/* ---------------- 作息时间 ---------------- */
+.mb12 { margin-bottom: 12rpx; }
+
+.period-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #f4f6fa;
+}
+.period-row:last-of-type { border-bottom: none; }
+
+.period-label {
+  flex: 0 0 120rpx;
+  font-size: 27rpx;
+  color: #46506b;
+}
+
+.time-pill {
+  min-width: 130rpx;
+  text-align: center;
+  font-size: 27rpx;
+  font-weight: 500;
+  color: #2b5cff;
+  background: #eef2ff;
+  border-radius: 12rpx;
+  padding: 10rpx 18rpx;
+}
